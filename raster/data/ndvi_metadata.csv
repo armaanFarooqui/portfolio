@@ -1,0 +1,2 @@
+,product,description,min_value,max_value,mean_value,AOI,CRS,has_overviews,source_items,generated_at
+0,ndvi_composite,Annual NDVI median composite derived from quarterly images,-0.9347826242446899,0.9299221634864807,0.6759117278380365,"Enschede, the Netherlands",EPSG:28992,True,3,2025-12-24T10:21:19Z
