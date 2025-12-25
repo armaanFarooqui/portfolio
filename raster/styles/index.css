@@ -1,0 +1,48 @@
+body{
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    align-items: center;
+    justify-content:flex-start; 
+    text-align: center;
+}
+
+#logo{
+    font-size: 6vw;
+    font-family: serif;
+    margin-top: 3vw;
+}
+
+#title{
+    font-size: 4vw;
+    font-family: sans-serif;
+    margin-top: 0;
+}
+
+.mapTitle{
+  font-size: 2vw;
+  font-family: sans-serif;
+  margin-top: 1vw;
+  margin-bottom: 1vw;
+}
+
+.map{
+    border: 0.5vw solid black;
+    width: 60vw;
+    height: 40vw;
+    margin-bottom: 1vw;
+}
+
+.legend{
+  background: white;
+  line-height: 1.5vw;
+  padding-left: 1vw;
+  padding-right: 1vw;
+}
+
+.legend i {
+  width: 1vw;
+  height: 1vw;
+  float: left;
+  margin-right: 1vw;
+}
