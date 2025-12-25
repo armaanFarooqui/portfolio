@@ -1,67 +1,91 @@
-var map = L.map('map').setView([52,6], 13);
+/// Map 1
+
+
+
+var mapOne = L.map('mapOne');
 
 L.tileLayer(
-    'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }
-).addTo(map);
-
-function getColorOne(d) {
-    return d > 51.543 ? '#006837':
-           d > 44.894 ?  '#51b35e':
-           d > 41.928 ? '#84ca66':
-           d > 31.08 ? '#addc6f':
-           d > 12.902 ? '#fff6b0':
-                        '#a50026';
-}
-
-function styleOne(feature) {
-    return {
-        fillColor: getColorOne(feature.properties.bikeway_density),
-        weight: 2,
-        opacity: 1,
-        color: 'black',
-        fillOpacity: 0.7
-    };
-}
+  'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }
+).addTo(mapOne);
 
 async function addLayerOne(url) {
-    const response = await fetch(url);
-    const data = await response.json();
+  const response = await fetch(url);
+  const data = await response.arrayBuffer();
 
-    const layer = L.geoJSON(data, {style: styleOne}).addTo(map);
-    map.fitBounds(layer.getBounds());
+  const georaster = await parseGeoraster(data);
+
+  const layer = new GeoRasterLayer({
+    georaster,
+    opacity: 0.7,
+    resolution: 256,
+    
+    pixelValuesToColorFn: (values) => {
+      
+      const v = values[0];
+
+      return v > 1.0 ? '#006837':
+             v > 0.6 ? '#36a657':
+             v > 0.4 ? '#93d168':
+             v > 0.2 ? '#e8f59f':
+             v > 0.0 ? '#fece7c':
+             v > -9999 ? '#a50026':
+                        null;
+    }
+
+  });
+
+  layer.addTo(mapOne);
+  mapOne.fitBounds(layer.getBounds());
 }
 
-addLayerOne('../data/bike_lane_density.geojson');
+addLayerOne('../data/ndvi_composite.tif');
 
-function getColorTwo(d) {
-    return d > 0.304 ? '#a50026':
-           d > 0.235 ? '#f8864f':
-           d > 0.171 ? '#feca79':
-           d > 0.121 ? '#fff2aa':
-           d > 0.015 ? '#c7e77f':
-                       '#006837';
-}
 
-function styleTwo(feature) {
-    return {
-        fillColor: getColorTwo(feature.properties.building_footprint_density),
-        weight: 2,
-        opacity: 1,
-        color: 'black',
-        fillOpacity: 0.7
-    };
-}
+
+/// Map 2
+
+
+
+var mapTwo = L.map('mapTwo');
+
+L.tileLayer(
+  'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }
+).addTo(mapTwo);
 
 async function addLayerTwo(url) {
-    const response = await fetch(url);
-    const data = await response.json();
+  const response = await fetch(url);
+  const data = await response.arrayBuffer();
 
-    const layer = L.geoJSON(data, {style: styleTwo}).addTo(map);
-    map.fitBounds(layer.getBounds());
-    
+  const georaster = await parseGeoraster(data);
+
+  const layer = new GeoRasterLayer({
+    georaster,
+    opacity: 0.7,
+    resolution: 256,
+
+    pixelValuesToColorFn: (values) => {
+      
+      const v = values[0];
+
+      return v > 1.0 ? '#a50026':
+             v > 0.6 ? '#fece7c':
+             v > 0.4 ? '#e8f59f':
+             v > 0.2 ? '#93d168':
+             v > 0.0 ? '#36a657':
+             v > -9999 ? '#006837':
+                        null;
+    }
+  });
+
+  layer.addTo(mapTwo);
+  mapTwo.fitBounds(layer.getBounds());
+
 }
 
-addLayerTwo('data/building_footprint_density.geojson');
+addLayerTwo('../data/ndbi_composite.tif');

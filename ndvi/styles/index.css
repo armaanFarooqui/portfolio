@@ -46,3 +46,11 @@ body{
   float: left;
   margin-right: 1vw;
 }
+
+.tooltip_style{
+  font-weight: normal;
+}
+
+.tooltip_title{
+  font-weight: bold;
+}
