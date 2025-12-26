@@ -1,6 +1,8 @@
 /// Map 1
 
-var mapOne = L.map('mapOne');
+
+
+var mapOne = L.map('mapOne').setView([52, 6], 13);
 var layerOne;
 
 L.tileLayer(
@@ -10,31 +12,38 @@ L.tileLayer(
   }
 ).addTo(mapOne);
 
+L.control.scale({
+  'position': 'bottomleft',
+  'metric': true,
+  'imperial': false
+}).addTo(mapOne);
+
 function getColourOne(d) {
-  return d > 51.543 ? '#006837':
-         d > 44.894 ? '#51b35e':
-         d > 41.928 ? '#84ca66':
-         d > 31.08  ? '#addc6f':
-         d > 12.902 ? '#fff6b0':
-                      '#a50026';
+  if (d >= 12.902 && d < 31.080) return '#d7191c';
+  if (d >= 31.080 && d < 41.941) return '#fdae61';
+  if (d >= 41.941 && d < 44.894) return '#ffffbf';
+  if (d >= 44.894 && d < 51.543) return '#a6d96a';
+  if (d >= 51.543)               return '#1a9641';
+
+  return 'transparent';
 }
 
 function styleOne(feature) {
   return {
     fillColor: getColourOne(feature.properties.bikeway_density),
     fillOpacity: 0.7,
-    weight: 2,
     color: 'black',
+    weight: 2,
   }
 }
 
-function highlightOne(e) {
+function HighlightOne(e) {
   var layer = e.target;
 
   layer.setStyle({
     fillOpacity: 1,
+    color: 'white',
     weight: 3,
-    color: 'cyan',
   });
 
   layer.bringToFront();
@@ -48,68 +57,77 @@ function zoomOne(e) {
   mapOne.fitBounds(e.target.getBounds());
 }
 
-function onOne(feature, layer) {
+function eachOne(feature, layer) {
   layer.on({
-    mouseover: highlightOne,
+    mouseover: HighlightOne,
     mouseout: resetOne,
     click: zoomOne,
-  });
+  })
 
   layer.bindTooltip(
-    '<span class="tooltip_title"> District Code: </span>' + feature.properties.district_code + '<br>' +
-    '<span class="tooltip_title"> Bikeway density: </span>' + feature.properties.bikeway_density.toString(), {
-      className: 'tooltip_style',
-    });
-
+    '<span class="tooltip_title">' + 'District Code: ' + '</span>'+ feature.properties.district_code + '<br>' +
+    '<span class="tooltip_title">' + 'Bike Lane Density: ' + '</span>' + feature.properties.bikeway_density
+  );
 }
 
 async function addLayerOne(url) {
   const response = await fetch(url);
   const data = await response.json();
 
-  layerOne = L.geoJSON(data, {
-    style: styleOne,
-    onEachFeature: onOne}).addTo(mapOne);
-
-  L.control.scale({
-    metric:true,
-    imperial:false
-  }).addTo(mapOne);
+  layerOne = L.geoJSON(
+    data, {
+      style: styleOne,
+      onEachFeature: eachOne,
+    }
+  ).addTo(mapOne);
 
   mapOne.fitBounds(layerOne.getBounds());
+
 }
 
 addLayerOne('../data/bike_lane_density.geojson');
 
-var legendOne = L.control({position: 'bottomright'});
+var legendOne = L.control({
+  'position': 'bottomright'
+})
 
-legendOne.onAdd = function () {
+legendOne.onAdd = function(feature) {
+  var div = L.DomUtil.create('div', 'legend');
+  var grades = [12.902, 31.08, 41.941, 44.894, 51.543];
 
-  var div = L.DomUtil.create('div', 'legend'),
-  
-  grades = [12.902, 31.08, 41.928, 44.894, 51.543],
-  labels = [];
+  div.innerHTML += '<h3>Bike Lane Density</h3>';
 
-  div.innerHTML += '<h3>LEGEND</h3>';
+  for (var i = 0; i < grades.length - 1; i++) {
+    
+    var from = grades[i];
+    var to = grades[i+1];
 
-  for (var i =0; i < grades.length; i++) {
-    div.innerHTML +=
-    '<i style="background:' + getColourOne(grades[i]) + '"></i>' +
-    grades[i] + (grades[i+1] ? ' &ndash; ' + grades[i+1] + '<br>': '+');
+    div.innerHTML += 
+      '<span class="legend_row">' +
+        '<span class="legend_box" style="background:' + getColourOne(from) + '"></span>' +
+        from + ' &ndash; ' + to +
+        
+      '</span>';
   }
 
-  return div;
+  div.innerHTML +=
+    '<span class="legend_row">' +
+      '<span class="legend_box" style="background:' + getColourOne(to) + '"></span>' +
+      to + '+' +
+    '</span>';
 
+  return div;
 }
 
 legendOne.addTo(mapOne);
+
 
 
 /// Map Two
 
 
 
-var mapTwo = L.map('mapTwo');
+var mapTwo = L.map('mapTwo').setView([52,6],13);
 var layerTwo;
 
 L.tileLayer(
@@ -119,21 +137,28 @@ L.tileLayer(
   }
 ).addTo(mapTwo);
 
+L.control.scale({
+  'position': 'bottomleft',
+  'metric': true,
+  'imperial': false,
+}).addTo(mapTwo);
+
 function getColourTwo(d) {
-  return d > 0.304 ? '#a50026':
-         d > 0.235 ? '#f8864f':
-         d > 0.171 ? '#feca79':
-         d > 0.121 ? '#fff2aa':
-         d > 0.015 ? '#c7e77f':
-                     '#006837';
+  if (d >= 0.015 && d < 0.121) return '#1a9641';
+  if (d >= 0.121 && d < 0.172) return '#a6d96a';
+  if (d >= 0.172 && d < 0.235) return '#ffffbf';
+  if (d >= 0.235 && d < 0.304) return '#fdae61';
+  if (d >= 0.304)              return '#d7191c';
+
+  return 'transparent';
 }
 
 function styleTwo(feature) {
   return {
     fillColor: getColourTwo(feature.properties.building_footprint_density),
     fillOpacity: 0.7,
+    color: 'black',
     weight: 2,
-    color: 'black'
   }
 }
 
@@ -142,9 +167,9 @@ function highlightTwo(e) {
 
   layer.setStyle({
     fillOpacity: 1,
-    weight: 3,
-    color: 'cyan',
-  })
+    color: 'white',
+    weight: 3
+  });
 
   layer.bringToFront();
 }
@@ -155,10 +180,9 @@ function resetTwo(e) {
 
 function zoomTwo(e) {
   mapTwo.fitBounds(e.target.getBounds());
-
 }
 
-function onTwo(feature, layer) {
+function eachTwo(feature, layer) {
   layer.on({
     mouseover: highlightTwo,
     mouseout: resetTwo,
@@ -166,52 +190,57 @@ function onTwo(feature, layer) {
   });
 
   layer.bindTooltip(
-    '<span class="tooltip_title">District Code: </span>' + feature.properties.district_code + '<br>' +
-    '<span class="tooltip_title">Building Footprint Density: </span>' + feature.properties.building_footprint_density.toString(), 
-    {
-      className: 'tooltip_style'
-    }
+    '<span class="tooltip_title">' + 'District Code: ' + '</span>' + feature.properties.district_code + '<br>' +
+    '<span class="tooltip_title">' + 'Building Footprint Density: ' + '</span>' + feature.properties.building_footprint_density
   );
+
 }
 
 async function addLayerTwo(url) {
   const response = await fetch(url);
   const data = await response.json();
 
-  layerTwo = L.geoJSON(data, {
-    style: styleTwo,
-    onEachFeature: onTwo,
-  }).addTo(mapTwo);
-
-  L.control.scale({
-    metric:true,
-    imperial:false
-  }).addTo(mapTwo);
+  layerTwo = L.geoJSON(
+    data, {
+      style: styleTwo,
+      onEachFeature: eachTwo,
+    }
+  ).addTo(mapTwo);
 
   mapTwo.fitBounds(layerTwo.getBounds());
 }
 
 addLayerTwo('../data/building_footprint_density.geojson');
 
-var legendTwo = L.control({position: 'bottomright'});
+var legendTwo = L.control({
+  'position': 'bottomright'
+})
 
-legendTwo.onAdd = function () {
+legendTwo.onAdd = function() {
+  var div = L.DomUtil.create('div', 'legend');
+  var grades = [0.015, 0.121, 0.172, 0.235, 0.304];
 
-  var div = L.DomUtil.create('div', 'legend'),
-  
-  grades = [0.015, 0.121, 0.171, 0.235, 0.304],
-  labels = [];
+  div.innerHTML += '<h3>Building Density</h3>';
 
-  div.innerHTML += '<h3>LEGEND</h3>';
+  for (var i = 0; i < grades.length - 1; i++) {
+    var from = grades[i];
+    var to = grades[i+1];
 
-  for (var i =0; i < grades.length; i++) {
-    div.innerHTML +=
-    '<i style="background:' + getColourTwo(grades[i]) + '"></i>' +
-    grades[i] + (grades[i+1] ? ' &ndash; ' + grades[i+1] + '<br>': '+');
+    div.innerHTML += 
+      '<span class="legend_row">' +
+        '<span class="legend_box" style="background:' + getColourTwo(from) + '"></span>' +
+        from + ' &ndash; ' + to + 
+      '</span>';
+
   }
 
-  return div;
+  div.innerHTML += 
+    '<span class="legend_row">' +
+      '<span class="legend_box" style="background: ' + getColourTwo(to) + '"></span>' +
+      to + '+' +
+    '</span>';
 
+  return div;
 }
 
 legendTwo.addTo(mapTwo);
