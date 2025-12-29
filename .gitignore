@@ -2,3 +2,6 @@ cache/
 .ipynb_checkpoints/
 *.tif
 *.tiff
+
+!raster/data/ndvi/composite/ndvi_composite.tif
+!raster/data/ndbi/composite/ndbi_composite.tif
