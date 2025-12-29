@@ -1,160 +1,121 @@
-/// Map 1
-
-
-
-var mapOne = L.map('mapOne');
+var map = L.map('map').setView([52,6], 13);
+var layerOne;
 
 L.tileLayer(
   'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }
-).addTo(mapOne);
+).addTo(map);
 
-function getColourOne(v) {
-  if (v == null ||
-      !Number.isFinite(v) ||
-      v === -9999
-  )
-    return null;
-      
-  return v > 0.8 ? '#1a9850':
-         v > 0.6 ? '#91cf60':
-         v > 0.4 ? '#d9ef8b':
-         v > 0.2 ? '#fee08b':
-         v > 0.0 ? '#fc8d59':
-         v > -1.0 ? '#d73027':
-                     null;
+function getColour(d) {
+  if (d >= 0.36 && d < 0.38) return '#d7191c';
+  if (d >= 0.38 && d < 0.46) return '#fdae61';
+  if (d >= 0.46 && d < 0.61) return '#ffffbf';
+  if (d >= 0.61 && d < 0.73) return '#a6d96a';
+  if (d >= 0.73)             return '#1a9641';
+
+  return 'transparent';
+
+/// https://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
 }
 
-function getColourTwo(v) {
-  if (v == null ||
-      !Number.isFinite(v) ||
-      v === -9999
-  )
-    return null;
-      
-  return v > 0.4 ? '#d73027':
-         v > 0.0 ? '#fee08b':
-         v > -1.0 ? '#1a9850':
-                     null;
-}
-
-
-async function addLayerOne(url) {
-  const response = await fetch(url);
-  const data = await response.arrayBuffer();
-
-  const georaster = await parseGeoraster(data);
-
-  const layer = new GeoRasterLayer({
-    georaster,
-    opacity: 0.5,
-    
-    pixelValuesToColorFn: (values) => {
-      return getColourOne(values[0])
-      
-    }
-
-  });
-
-  layer.addTo(mapOne);
-
-  var legend = L.control({position: 'bottomright'});
-
-  legend.onAdd = function() {
-    var div = L.DomUtil.create('div', 'legend'),
-    grades = [1, 0.8, 0.6, 0.4, 0.2, 0, -1];
-
-    div.innerHTML += '<h3>LEGEND</h3>';
-
-    for (var i = 0; i < grades.length - 1; i++) {
-      div.innerHTML += 
-      '<i style="background: ' + getColourOne(grades[i]) + '"></i>' +
-      grades[i] + ' &ndash; ' + grades[i+1]+ '</br>';
-
-    }
-
-    return div;
-  };
-
-  legend.addTo(mapOne);
-
-  L.control.scale({
-    metric: true,
-    imperial: false
-  }).addTo(mapOne);
-
-  mapOne.fitBounds(layer.getBounds());
-}
-
-addLayerOne('../data/ndvi_composite.tif');
-
-
-
-/// Map 2
-
-
-
-var mapTwo = L.map('mapTwo');
-
-L.tileLayer(
-  'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+function style(feature) {
+  return {
+    fillColor: getColour(feature.properties.mean_ndvi),
+    fillOpacity: 0.7,
+    color: 'black',
+    weight: 2
   }
-).addTo(mapTwo);
-
-async function addLayerTwo(url) {
-  const response = await fetch(url);
-  const data = await response.arrayBuffer();
-
-  const georaster = await parseGeoraster(data);
-
-  const layer = new GeoRasterLayer({
-    georaster,
-    opacity: 0.6,
-    
-    pixelValuesToColorFn: (values) => {
-      return getColourTwo(values[0])
-      
-    }
-  });
-
-  layer.addTo(mapTwo);
-
-  var legend = L.control({position: 'bottomright'});
-
-  legend.onAdd = function() {
-    var div = L.DomUtil.create('div', 'legend'),
-    grades = [1, 0.4, 0, -1];
-
-    div.innerHTML += '<h3>LEGEND</h3>';
-
-    for (var i = 0; i < grades.length - 1; i++) {
-      div.innerHTML += 
-      '<i style="background: ' + getColourTwo(grades[i]) + '"></i>' +
-      grades[i] + ' &ndash; ' + grades[i+1]+ '</br>';
-
-    }
-
-    return div;
-  };
-
-  legend.addTo(mapTwo);
-
-  L.control.scale({
-    metric: true,
-    imperial: false
-  }).addTo(mapTwo);
-
-  mapTwo.fitBounds(layer.getBounds());
-
 }
 
-addLayerTwo('../data/ndbi_composite.tif');
+function highlight(e) {
+  var layer = e.target;
 
-window.addEventListener('load', () => {
-  mapOne.invalidateSize();
-  mapTwo.invalidateSize();
+  layer.setStyle({
+    fillOpacity: 1,
+    color: 'cyan',
+    weight: 3
+  });
+
+  layer.bringToFront();
+}
+
+function reset(e) {
+  layerOne.resetStyle(e.target);
+}
+
+function zoom(e) {
+  map.fitBounds(e.target.getBounds());
+}
+
+function each(feature, layer){
+  layer.on({
+    mouseover: highlight,
+    mouseout: reset,
+    click: zoom,
+  });
+
+  layer.bindTooltip(
+    '<span class="tooltip_title">' + 'District Code: ' + '</span>' + feature.properties.district_code + '<br>' +
+    '<span class="tooltip_title">' + 'Mean NDVI: ' + '</span>' + feature.properties.mean_ndvi.toString() + '<br>' +
+    '<span class="tooltip_title">' + 'Min NDVI: ' + '</span>' + feature.properties.min_ndvi.toString() + '<br>' +
+    '<span class="tooltip_title">' + 'Max NDVI: ' + '</span>' + feature.properties.max_ndvi.toString()
+  );
+}
+
+async function addLayer(url) {
+  const response = await fetch(url);
+  const data = await response.json();
+
+  layerOne = L.geoJSON(
+    data, {
+      style: style,
+      onEachFeature: each,
+    }
+  ).addTo(map);
+
+  map.fitBounds(layerOne.getBounds());
+}
+
+addLayer('../data/latest/ndvi_stats_latest.geojson');
+
+L.control.scale({
+  position: 'bottomleft',
+  metric: true,
+  imperial: false
+}).addTo(map);
+
+var legend = L.control({
+  position: 'bottomright'
 });
+
+legend.onAdd = function () {
+  var div = L.DomUtil.create('div', 'legend');
+  var grades = [0.36, 0.38, 0.46, 0.61, 0.73] 
+;
+
+  div.innerHTML += '<h3>LEGEND</h3>';
+
+  for (var i = 0; i < grades.length - 1; i++) {
+    var from = grades[i];
+    var to = grades[i+1];
+    var last = grades[grades.length - 1];
+
+    div.innerHTML +=
+      '<span class="legend_row">' +
+        '<span class="legend_box" style="background: ' + getColour(from) + ';"></span>' +
+        from + ' &ndash; ' + to +
+      '</span>';
+  }
+
+  div.innerHTML += 
+    '<span class="legend_row">' +
+      '<span class="legend_box" style="background: ' + getColour(to) + ';"></span>' + 
+      last + '+' +
+    '</span>';
+
+  return div;
+}
+
+legend.addTo(map);

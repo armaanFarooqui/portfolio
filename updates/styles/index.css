@@ -1,10 +1,11 @@
 body{
     display: flex;
     flex-direction: column;
-    font-weight: bold;
     align-items: center;
     justify-content:flex-start; 
     text-align: center;
+    font-family: sans-serif;
+    font-weight: normal;
 }
 
 #logo{
@@ -19,9 +20,14 @@ body{
     margin-top: 0;
 }
 
+#instructions{
+  font-size: 2vw;
+}
+
 .mapTitle{
   font-size: 2vw;
   font-family: sans-serif;
+  font-weight: bold;
   margin-top: 1vw;
   margin-bottom: 1vw;
 }
@@ -40,9 +46,22 @@ body{
   padding-right: 1vw;
 }
 
-.legend i {
+.legend_row{
+  display: flex;
+  align-items: center;
+}
+
+.legend_box {
+  flex-shrink: 0;
   width: 1vw;
   height: 1vw;
-  float: left;
   margin-right: 1vw;
+}
+
+.leaflet-tooltip{
+  font-weight: normal;
+}
+
+.tooltip_title{
+  font-weight: bold;
 }
