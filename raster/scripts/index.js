@@ -88,7 +88,7 @@ async function addLayerOne(url) {
   mapOne.fitBounds(layer.getBounds());
 }
 
-addLayerOne('../data/ndvi_composite.tif');
+addLayerOne('../data/ndvi/composite/ndvi_composite.tif');
 
 
 
@@ -152,7 +152,7 @@ async function addLayerTwo(url) {
 
 }
 
-addLayerTwo('../data/ndbi_composite.tif');
+addLayerTwo('../data/ndbi/composite/ndbi_composite.tif');
 
 window.addEventListener('load', () => {
   mapOne.invalidateSize();
