@@ -2,7 +2,8 @@
 
 
 
-var mapOne = L.map('mapOne');
+var mapOne = L.map('mapOne').setView([52, 6], 13);
+var layerOne;
 
 L.tileLayer(
   'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -11,35 +12,17 @@ L.tileLayer(
   }
 ).addTo(mapOne);
 
-function getColourOne(v) {
-  if (v == null ||
-      !Number.isFinite(v) ||
-      v === -9999
-  )
-    return null;
-      
-  return v > 0.8 ? '#1a9850':
-         v > 0.6 ? '#91cf60':
-         v > 0.4 ? '#d9ef8b':
-         v > 0.2 ? '#fee08b':
-         v > 0.0 ? '#fc8d59':
-         v > -1.0 ? '#d73027':
-                     null;
-}
+function getColourOne(d) {
+  if (d > -9999 && d < 0.0) return '#d73027';
+  if (d >= 0.0 && d < 0.2) return '#fc8d59';
+  if (d >= 0.2 && d < 0.4) return '#fee08b';
+  if (d >= 0.4 && d < 0.6) return '#d9ef8b';
+  if (d >= 0.6 && d < 0.8) return '#91cf60';
+  if (d >= 0.8) return '#1a9850';
 
-function getColourTwo(v) {
-  if (v == null ||
-      !Number.isFinite(v) ||
-      v === -9999
-  )
-    return null;
-      
-  return v > 0.4 ? '#d73027':
-         v > 0.0 ? '#fee08b':
-         v > -1.0 ? '#1a9850':
-                     null;
+  return 'transparent';
+  /// Colourmap source: https://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=6
 }
-
 
 async function addLayerOne(url) {
   const response = await fetch(url);
@@ -47,48 +30,59 @@ async function addLayerOne(url) {
 
   const georaster = await parseGeoraster(data);
 
-  const layer = new GeoRasterLayer({
+  layerOne = new GeoRasterLayer({
     georaster,
-    opacity: 0.5,
-    
+    opacity: 0.7,
+
     pixelValuesToColorFn: (values) => {
       return getColourOne(values[0])
-      
     }
-
   });
 
-  layer.addTo(mapOne);
-
-  var legend = L.control({position: 'bottomright'});
-
-  legend.onAdd = function() {
-    var div = L.DomUtil.create('div', 'legend'),
-    grades = [1, 0.8, 0.6, 0.4, 0.2, 0, -1];
-
-    div.innerHTML += '<h3>LEGEND</h3>';
-
-    for (var i = 0; i < grades.length - 1; i++) {
-      div.innerHTML += 
-      '<i style="background: ' + getColourOne(grades[i]) + '"></i>' +
-      grades[i] + ' &ndash; ' + grades[i+1]+ '</br>';
-
-    }
-
-    return div;
-  };
-
-  legend.addTo(mapOne);
-
-  L.control.scale({
-    metric: true,
-    imperial: false
-  }).addTo(mapOne);
-
-  mapOne.fitBounds(layer.getBounds());
+  layerOne.addTo(mapOne);
+  mapOne.fitBounds(layerOne.getBounds());
 }
 
 addLayerOne('../data/ndvi/composite/ndvi_composite.tif');
+
+L.control.scale({
+  position: 'bottomleft',
+  imperial: false
+}).addTo(mapOne);
+
+var legendOne = L.control({
+  position: 'bottomright',
+});
+
+legendOne.onAdd = function() {
+  var div = L.DomUtil.create('div', 'legend');
+  var grades = [-1, 0.0, 0.2, 0.4, 0.6, 0.8];
+
+  div.innerHTML += '<h3>LEGEND</h3>';
+
+  for (var i = 0; i < grades.length - 1; i++) {
+    var from = grades[i];
+    var to = grades[i+1];
+    var last = grades[grades.length - 1]
+
+    div.innerHTML += 
+    '<span class="legend_row">' +
+      '<span class="legend_box" style="background: ' + getColourOne(from) + ';"></span>' +
+      from + ' &ndash; ' + to +
+    '</span>'
+    ;
+  }
+
+  div.innerHTML += 
+    '<span class="legend_row">' +
+      '<span class="legend_box" style="background: ' + getColourOne(last) + ';"></span>' +
+      last + '+' +
+    '</span>';
+
+  return div;
+}
+
+legendOne.addTo(mapOne);
 
 
 
@@ -96,7 +90,8 @@ addLayerOne('../data/ndvi/composite/ndvi_composite.tif');
 
 
 
-var mapTwo = L.map('mapTwo');
+var mapTwo = L.map('mapTwo').setView([52, 6], 13);
+var layerTwo;
 
 L.tileLayer(
   'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -105,56 +100,72 @@ L.tileLayer(
   }
 ).addTo(mapTwo);
 
+function getColourTwo(d) {
+  if (d > -9999 && d < 0.0) return '#1a9850';
+  if (d >= 0.0 && d < 0.2) return '#91cf60';
+  if (d >= 0.2 && d < 0.4) return '#d9ef8b';
+  if (d >= 0.4 && d < 0.6) return '#fee08b';
+  if (d >= 0.6 && d < 0.8) return '#fc8d59';
+  if (d >= 0.8) return '#d73027';
+  return 'transparent';
+}
+
 async function addLayerTwo(url) {
   const response = await fetch(url);
   const data = await response.arrayBuffer();
 
   const georaster = await parseGeoraster(data);
-
-  const layer = new GeoRasterLayer({
+  
+  layerTwo = new GeoRasterLayer({
     georaster,
-    opacity: 0.6,
-    
+    opacity: 0.7,
+
     pixelValuesToColorFn: (values) => {
       return getColourTwo(values[0])
-      
     }
   });
 
-  layer.addTo(mapTwo);
-
-  var legend = L.control({position: 'bottomright'});
-
-  legend.onAdd = function() {
-    var div = L.DomUtil.create('div', 'legend'),
-    grades = [1, 0.4, 0, -1];
-
-    div.innerHTML += '<h3>LEGEND</h3>';
-
-    for (var i = 0; i < grades.length - 1; i++) {
-      div.innerHTML += 
-      '<i style="background: ' + getColourTwo(grades[i]) + '"></i>' +
-      grades[i] + ' &ndash; ' + grades[i+1]+ '</br>';
-
-    }
-
-    return div;
-  };
-
-  legend.addTo(mapTwo);
-
-  L.control.scale({
-    metric: true,
-    imperial: false
-  }).addTo(mapTwo);
-
-  mapTwo.fitBounds(layer.getBounds());
-
+  layerTwo.addTo(mapTwo);
+  mapTwo.fitBounds(layerTwo.getBounds());
 }
 
 addLayerTwo('../data/ndbi/composite/ndbi_composite.tif');
 
-window.addEventListener('load', () => {
-  mapOne.invalidateSize();
-  mapTwo.invalidateSize();
+var legendTwo = L.control({
+  position: 'bottomright',
 });
+
+legendTwo.onAdd = function () {
+  var div = L.DomUtil.create('div', 'legend');
+  var grades = [-1, 0.0, 0.2, 0.4, 0.6, 0.8];
+
+  div.innerHTML += '<h3>LEGEND</h3>';
+
+  for(var i = 0; i < grades.length - 1; i++) {
+    var from = grades[i];
+    var to = grades[i+1];
+    var last = grades[grades.length - 1];
+
+    div.innerHTML += 
+      '<span class="legend_row">' +
+        '<span class="legend_box" style="background: ' + getColourTwo(from) + ';"></span>' +
+        from + ' &ndash; ' + to +
+      '</span>';
+  }
+
+  div.innerHTML += 
+    '<span class="legend_row">' +
+      '<span class="legend_box" style="background: ' + getColourTwo(last) + ';"></span>' +
+      last + '+' +
+    '</span>';
+
+
+  return div;
+}
+
+legendTwo.addTo(mapTwo);
+
+L.control.scale({
+  position: 'bottomleft',
+  imperial: false,
+}).addTo(mapTwo);
