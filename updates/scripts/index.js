@@ -34,7 +34,7 @@ function highlight(e) {
 
   layer.setStyle({
     fillOpacity: 1,
-    color: 'cyan',
+    color: 'white',
     weight: 3
   });
 
@@ -95,7 +95,7 @@ legend.onAdd = function () {
   var grades = [0.36, 0.38, 0.46, 0.61, 0.73] 
 ;
 
-  div.innerHTML += '<h3>LEGEND</h3>';
+  div.innerHTML += '<h3>Mean NDVI</h3>';
 
   for (var i = 0; i < grades.length - 1; i++) {
     var from = grades[i];

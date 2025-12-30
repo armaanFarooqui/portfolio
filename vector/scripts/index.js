@@ -95,7 +95,7 @@ legendOne.onAdd = function(feature) {
   var div = L.DomUtil.create('div', 'legend');
   var grades = [12.902, 31.08, 41.941, 44.894, 51.543];
 
-  div.innerHTML += '<h3>Bike Lane Density</h3>';
+  div.innerHTML += '<h3>LEGEND</h3>';
 
   for (var i = 0; i < grades.length - 1; i++) {
     
@@ -220,7 +220,7 @@ legendTwo.onAdd = function() {
   var div = L.DomUtil.create('div', 'legend');
   var grades = [0.015, 0.121, 0.172, 0.235, 0.304];
 
-  div.innerHTML += '<h3>Building Density</h3>';
+  div.innerHTML += '<h3>LEGEND</h3>';
 
   for (var i = 0; i < grades.length - 1; i++) {
     var from = grades[i];

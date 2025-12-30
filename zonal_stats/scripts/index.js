@@ -44,7 +44,7 @@ function highlightOne(e) {
 
   layer.setStyle({
     fillOpacity: 1,
-    color:'cyan',
+    color:'white',
     opacity: 1,
     weight: 3,
   });
@@ -177,7 +177,7 @@ function highlightTwo(e) {
 
   layer.setStyle({
     fillOpacity: 1,
-    color: 'cyan',
+    color: 'white',
     weight: 3
   });
 
