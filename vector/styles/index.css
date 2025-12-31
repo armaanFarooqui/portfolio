@@ -20,6 +20,7 @@ body{
   background: white;
   font-family: sans-serif;
   font-size: 2vw;
+  font-weight: bold;
   color: black;
   border: 0.25vw solid black;
   display: flex;

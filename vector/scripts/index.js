@@ -19,11 +19,11 @@ L.control.scale({
 }).addTo(mapOne);
 
 function getColourOne(d) {
-  if (d >= 12.902 && d < 31.080) return '#d7191c';
-  if (d >= 31.080 && d < 41.941) return '#fdae61';
-  if (d >= 41.941 && d < 44.894) return '#ffffbf';
-  if (d >= 44.894 && d < 51.543) return '#a6d96a';
-  if (d >= 51.543)               return '#1a9641';
+  if (d >= 12.9 && d < 31.06) return '#d7191c';
+  if (d >= 31.06 && d < 41.95) return '#fdae61';
+  if (d >= 41.95 && d < 44.89) return '#ffffbf';
+  if (d >= 44.89 && d < 51.49) return '#a6d96a';
+  if (d >= 51.49)               return '#1a9641';
 
   return 'transparent';
 }
@@ -93,7 +93,7 @@ var legendOne = L.control({
 
 legendOne.onAdd = function(feature) {
   var div = L.DomUtil.create('div', 'legend');
-  var grades = [12.902, 31.08, 41.941, 44.894, 51.543];
+  var grades = [12.9, 31.06, 41.95, 44.89, 51.49];
 
   div.innerHTML += '<h3>LEGEND</h3>';
 
@@ -144,11 +144,11 @@ L.control.scale({
 }).addTo(mapTwo);
 
 function getColourTwo(d) {
-  if (d >= 0.015 && d < 0.121) return '#1a9641';
-  if (d >= 0.121 && d < 0.172) return '#a6d96a';
-  if (d >= 0.172 && d < 0.235) return '#ffffbf';
-  if (d >= 0.235 && d < 0.304) return '#fdae61';
-  if (d >= 0.304)              return '#d7191c';
+  if (d >= 0.02 && d < 0.12) return '#1a9641';
+  if (d >= 0.12 && d < 0.17) return '#a6d96a';
+  if (d >= 0.17 && d < 0.23) return '#ffffbf';
+  if (d >= 0.23 && d < 0.3) return '#fdae61';
+  if (d >= 0.3)              return '#d7191c';
 
   return 'transparent';
 }
@@ -218,7 +218,7 @@ var legendTwo = L.control({
 
 legendTwo.onAdd = function() {
   var div = L.DomUtil.create('div', 'legend');
-  var grades = [0.015, 0.121, 0.172, 0.235, 0.304];
+  var grades = [0.02, 0.12, 0.17, 0.23, 0.3 ];
 
   div.innerHTML += '<h3>LEGEND</h3>';
 

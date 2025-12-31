@@ -1,2 +1,2 @@
 product,description,AOI,CRS,has_overviews,source_items,generated_at,min_value,max_value,mean_value
-ndvi_composite,Annual NDVI median composite derived from Sentinel-2 images,"Enschede, the Netherlands",EPSG:4326,True,3,2025-12-29,-0.93,0.89,0.66
+ndvi_composite,Annual NDVI median composite derived from Sentinel-2 images,"Enschede, the Netherlands",EPSG:4326,True,3,2025-12-31,-0.93,0.89,0.66
