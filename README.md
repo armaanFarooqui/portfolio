@@ -1,18 +1,25 @@
-# Spatial Data Engineering for Urban Environments
+# Spatial Computing Projects
 
-This repository contains a set of four interconnected projects demonstrating spatial data engineering workflows using Python, PostGIS, and web-ready outputs.
+This repository contains three independent projects demonstrating computer vision, supervised machine learning, and PostGIS-based spatial analytics workflows.
+
+Each project is implemented as a reproducible pipeline using Python and open geospatial tools.
+
 
 ## Project Structure
 
-1. **vector:** Urban Infrastructure Density (vector ETL)
-2. **raster:** NDVI and NDBI Composite Generation (raster ETL)
-3. **zonal_stats:** District-Level Zonal Statistics (vector-raster analytics)
-4. **updates:** Multi-Year NDVI Update Pipeline (incremental updates)
+1. **field_boundary_detection:** Edge-based segmentation of agricultural parcels (raster to vector workflow)
+2. **random_forest_lulc:** Supervised land-cover classification using Random Forest
+3. **urban_infrastructure_density:** District-level infrastructure metrics using Python + PostGIS
+
+
 
 ## Technology Overview
 
-Python is used for data processing, PostGIS for spatial computation, and Leaflet for visualisation.
+Python is used for data processing and modelling, PostGIS for spatial database computation, and GeoJSON outputs are prepared for web-based visualisation.
 
-## Repository Layout
+Core libraries include: GeoPandas, Rasterio, OpenCV, scikit-learn, OSMnx, and SQLAlchemy.
 
-See individual project folders for further documentation, including the execution instructions.
+
+## Documentation
+
+See individual project folders for further documentation.

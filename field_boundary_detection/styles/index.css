@@ -1,0 +1,83 @@
+body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content:flex-start; 
+    text-align: center;
+    font-family: sans-serif;
+    font-weight: normal;
+    gap: 1vw;
+}
+
+#back_link{
+  color: inherit;
+  text-decoration: none;
+}
+
+#back{
+  width: 10vw;
+  height: 5vw;
+  background: white;
+  font-family: sans-serif;
+  font-size: 2vw;
+  font-weight: bold;
+  color: black;
+  border: 0.25vw solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: -2vw;
+}
+
+#back:hover {
+  background: black;
+  color: white;
+}
+
+#logo{
+    font-size: 5.5vw;
+    font-family: serif;
+}
+
+#github{
+  width: 20vw;
+}
+
+#title{
+    font-size: 4vw;
+    font-family: sans-serif;
+}
+
+.map{
+    border: 0.5vw solid black;
+    width: 60vw;
+    height: 40vw;
+    margin-bottom: 1vw;
+}
+
+.legend{
+  background: white;
+  line-height: 1.5vw;
+  padding-left: 1vw;
+  padding-right: 1vw;
+}
+
+.legend_row{
+  display: flex;
+  align-items: center;
+}
+
+.legend_box {
+  flex-shrink: 0;
+  width: 1vw;
+  height: 1vw;
+  margin-right: 1vw;
+}
+
+.leaflet-tooltip{
+  font-weight: normal;
+}
+
+.tooltip_title{
+  font-weight: bold;
+}
