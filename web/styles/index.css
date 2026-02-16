@@ -23,6 +23,11 @@ a{
     width: 20vw;
 }
 
+#instructions{
+  font-size: 2vw;
+}
+
+
 .frame{
     width: 60vw;
     height: 40vw;
