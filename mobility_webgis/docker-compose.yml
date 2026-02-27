@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    container_name: mobility_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mobility
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mobility"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  
+  notebook:
+    build: ./tools
+    container_name: mobility_notebook
+    ports:
+      - "8888:8888"
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: mobility
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    volumes:
+      - ./data:/data
+      - ./scripts:/scripts
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - jupyter
+      - lab
+      - --ip=0.0.0.0
+      - --port=8888
+      - --no-browser
+      - --allow-root
+      - --ServerApp.token=
+      - --ServerApp.password=
+      - --ServerApp.allow_origin=*
+      - --ServerApp.allow_remote_access=True
+
+  tools:
+    build: ./tools
+    container_name: mobility_tools
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: mobility
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    volumes:
+      - ./data:/data
+      - ./scripts:/scripts
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dbdata:

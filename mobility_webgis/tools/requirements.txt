@@ -1,0 +1,7 @@
+geopandas
+sqlalchemy
+psycopg
+geoalchemy2
+folium 
+matplotlib 
+mapclassify
