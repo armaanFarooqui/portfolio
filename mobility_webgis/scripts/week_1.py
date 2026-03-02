@@ -102,7 +102,7 @@ def process_cbs(zip_path, engine):
         enschede = (
             enschede[['gemeentecode', 'gemeentenaam', 'geometry']]
             .rename(columns={
-                'gemeentecode': 'cbs_code',
+                'gemeentecode': 'id',
                 'gemeentenaam': 'name'
             })
         )
@@ -123,7 +123,7 @@ def process_cbs(zip_path, engine):
             enschede_wijken[['wijkcode', 'wijknaam', 'geometry']]
             .rename(columns={
                 'wijknaam': 'name',
-                'wijkcode': 'cbs_code'
+                'wijkcode': 'id'
             })
         )
 
@@ -173,7 +173,10 @@ def process_osm(zip_path, engine, boundary):
 
         enschede_roads = (
             enschede_roads[['osm_id', 'name', 'fclass', 'geometry']]
-            .rename(columns={'fclass': 'road_class'})
+            .rename(columns={
+                'osm_id': 'id',
+                'fclass': 'road_class'
+            })
         )
                 
         enschede_roads['geometry'] = enschede_roads['geometry'].make_valid()
