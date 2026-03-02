@@ -3,5 +3,5 @@ data/processed/*
 data/logs/*
 *.env
 __pycache__/
-Trash-0
+.Trash-0
 .ipynb_checkpoints

@@ -1,8 +1,27 @@
 # Mobility Infrastructure WebGIS – Enschede
 
-Week 1 goal:
-- Setup PostGIS in Docker
-- Import CBS Wijken (Enschede)
-- Import OSM Roads (Enschede)
-- Add GiST indexes
-- Validate spatial queries manually
+Reproducible WebGIS backend foundation for spatial API development and frontend integration.
+
+## Stack
+
+* PostGIS (Docker)
+* Node.js + Express
+* Python (GeoPandas) for data loading
+
+## Data
+
+* CBS Wijken (Enschede)
+* OSM Roads (Geofabrik extract)
+
+## Run
+
+```bash
+docker compose up -d --build
+docker compose run --rm tools python week_1.py
+```
+
+API available at:
+
+```
+http://localhost:3000
+```
