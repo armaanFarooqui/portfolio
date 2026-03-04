@@ -25,3 +25,9 @@ API available at:
 ```
 http://localhost:3000
 ```
+
+Frontend available at:
+
+```
+http://localhost:5173/
+```

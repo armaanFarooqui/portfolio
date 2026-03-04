@@ -5,3 +5,4 @@ geoalchemy2
 folium 
 matplotlib 
 mapclassify
+osmnx
