@@ -1,41 +1,87 @@
 import * as React from 'react';
-import Map, { Source, Layer } from 'react-map-gl/maplibre';
+import {Map, Source, Layer} from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 function App() {
 
-  const [districts, setDistricts] = React.useState(null);
-  const [roads, setRoads] = React.useState(null);
-  const [rail, setRail] = React.useState(null);
-  const [canals, setCanals] = React.useState(null);
-  const [busStops, setBusStops] = React.useState(null);
-  const [railwayStations, setRailwayStations] = React.useState(null);
-
-  const [showDistricts, setShowDistricts] = React.useState(true);
-  const [showRoads, setShowRoads] = React.useState(true);
-  const [showRail, setShowRail] = React.useState(true);
-  const [showCanals, setShowCanals] = React.useState(true);
-  const [showBusStops, setShowBusStops] = React.useState(true);
-  const [showRailwayStations, setShowRailwayStations] = React.useState(true);
-
-  const [hoverInfo, setHoverInfo] = React.useState(null);
-
   const mapRef = React.useRef(null);
   const debounceRef = React.useRef(null);
 
-  async function fetchLayer(layer, bbox) {
-    const [minx, miny, maxx, maxy] = bbox;
+  const [layerData, setLayerData] = React.useState({});
 
-    const res = await fetch(`http://localhost:3000/api/layers/${layer}/features?bbox=${minx},${miny},${maxx},${maxy}`);
+  const LW = 1.5;
+  const LN = 'line';
 
-    if (!res.ok) throw new Error('Failed to load ' + layer);
+  const CR = 'circle';
+  const CW = 6;
 
-    return res.json();
-  }
+  const LAYERS = {
+    
+    roads: {
+      type: LN,
+      paint: {
+        'line-color': 'red',
+        'line-width': LW
+      },
+    },
+
+    rail: {
+      type: LN,
+      paint: {
+        'line-color': 'blue',
+        'line-width': LW
+      }
+    },
+
+    canals: {
+      type: LN,
+      paint:{
+        'line-color': 'blue',
+        'line-width': LW
+      }
+    },
+
+    'bus_stops': {
+      type: CR,
+      paint: {
+        'circle-radius': CW,
+        'circle-color': 'blue'
+      }
+    },
+
+    'railway_stations': {
+      type: CR,
+      paint: {
+        'circle-radius': CW,
+        'circle-color': 'blue'
+      }
+    },
+
+    districts: {
+      type: 'fill',
+      paint: {
+        'fill-color': 'khaki',
+        'fill-opacity': 0.3,
+      }
+    },
+
+
+  };
+
+  const [visibleLayer, setVisibleLayer] = React.useState(
+
+    Object.fromEntries(
+      Object.keys(LAYERS).map(layer => [layer, true])
+    )
+
+  );
+
+  const [hoverInfo, setHoverInfo] = React.useState(null);
 
   function getBbox() {
-    const map = mapRef.current?.getMap();
-    if (!map) return null;
+    
+    const map = mapRef.current.getMap();
+    if (!map) return;
 
     const bounds = map.getBounds();
 
@@ -43,249 +89,184 @@ function App() {
       bounds.getWest(),
       bounds.getSouth(),
       bounds.getEast(),
-      bounds.getNorth(),
+      bounds.getNorth()
     ];
+
+  }
+
+  async function fetchLayer(layer, bbox) {
+    
+    const [minx, miny, maxx, maxy] = bbox;
+
+    const res = await fetch(
+      `http://localhost:3000/api/layers/${layer}/features?bbox=${minx},${miny},${maxx},${maxy}`
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to load ${layer} roads`);
+    }
+
+    return res.json();
   }
 
   async function loadData() {
-      try {
+    
+    const bbox = getBbox();
+    if (!bbox) return null;
 
-        const bbox = getBbox();
-        if (!bbox) return;
+    const results = await Promise.all(
+      Object.keys(LAYERS).map(layer => fetchLayer(layer, bbox))
+    );
 
-        const [
-          districtsData, 
-          roadsData, 
-          railData, 
-          canalsData, 
-          busStopsData, 
-          railwayStationsData
-        ] = await Promise.all([
-          fetchLayer('districts', bbox),
-          fetchLayer('roads', bbox),
-          fetchLayer('rail', bbox),
-          fetchLayer('canals', bbox),
-          fetchLayer('bus_stops', bbox),
-          fetchLayer('railway_stations', bbox)
-        ]);
+    const newData = {};
 
-        setDistricts(districtsData);
-        setRoads(roadsData);
-        setRail(railData);
-        setCanals(canalsData);
-        setBusStops(busStopsData);
-        setRailwayStations(railwayStationsData);
-        
+    Object.keys(LAYERS).forEach((layer, i) => {
+      newData[layer] = results[i];
+    })
 
-      } catch (err) {
-          console.log(err);
-      }
-    }
+    setLayerData(newData);
+  }
 
-  return (    
-    <div className='h-screen w-screen z-1'>
-      <Map 
-        ref={mapRef}
-        onLoad={() => loadData()}
-        onMoveEnd={() => {
-          clearTimeout(debounceRef.current);
-
-          debounceRef.current = setTimeout(() => {
-            loadData();
-          }, 300);
-        }}
-        initialViewState={{
-          latitude: 52.15,
-          longitude: 5.38,
-          zoom: 6.5
-        }}
+  return (
+    
+    <div className='h-screen w-screen'>
+      
+      <Map
         className='h-full w-full'
-        mapStyle='https://tiles.openfreemap.org/styles/liberty'
-        interactiveLayerIds={['districts-fill', 'districts-line', 'roads-line', 'rail-line', 'canals_line', 'bus_stops_circle', 'railway_stations_circle']}
-        onMouseMove={e=> {
-          const feature = e.features && e.features[0];
+        ref={mapRef}
+        onLoad={loadData}
+
+        onMouseMove={e => {
+          
+          const feature = e.features?.[0]
 
           if (feature) {
             setHoverInfo({
-              id: feature.id,
-              sourceName: feature.layer.source,
+              source: feature.source,
               properties: feature.properties
-            })
+            });
           } else {
             setHoverInfo(null);
           }
-        }} 
+
+        }}
+
+        interactiveLayerIds={
+          Object.keys(LAYERS).map(layer => `${layer}-layer`)
+        }
+
+        onMoveEnd={() => {
+
+          clearTimeout(debounceRef.current);
+          debounceRef.current = setTimeout(loadData, 300);
+
+        }}
+
+        initialViewState={{
+          latitude:52.15,
+          longitude:5.38,
+          zoom: 6.5
+        }}
+
+        mapStyle='https://tiles.openfreemap.org/styles/liberty'
       >
-        
-      {showDistricts && districts && (
-        <Source id='Districts' type='geojson' data={districts}>
-          
-          <Layer
-            id='districts-fill'
-            type='fill'
-            paint={{
-              'fill-color': '#f0e68c',
-              'fill-opacity': 0.4
-            }}
-          />
 
-          <Layer 
-            id='districts-line'
-            type='line'
-            paint={{
-              'line-width': 5,
-            }}
-          />
+        {Object.keys(LAYERS).map(layer => {
 
-        </Source>
-      )}
+          const config = LAYERS[layer];
 
-      {showRoads && roads && (
-        <Source id='Roads' type='geojson' data={roads}>
-          <Layer
-            id='roads-line'
-            type='line'
-            paint={{
-              'line-color': 'navy',
-              'line-opacity': 0.8,
-              'line-width': 1.5
-            }} 
-          />
-        </Source>
-      )}
+          if (!layerData[layer] || !visibleLayer[layer]) return null;
 
-      {showRail && rail && (
-        <Source id='rail' type='geojson' data={rail}>
-          <Layer 
-            id='rail-line'
-            type='line'
-            paint={{
-              'line-color': 'navy',
-              'line-width': 1.5
-            }}
-          />
-        </Source>
-      )}
+          return (
 
-      {showCanals && canals && (
-        <Source id='Canals' type='geojson' data={canals}>
-          <Layer
-            id='canals_line'
-            type='line'
-            paint={{
-              'line-color': 'navy',
-              'line-width': 1.5
-            }} 
-          />
-        </Source>
-      )}
+            <Source
+              key={layer}
+              id={layer}
+              type='geojson'
+              data={layerData[layer]}
+            >
 
-      {showBusStops && busStops && (
-        <Source id='Bus stops' type='geojson' data={busStops}>
-          <Layer
-            id='bus_stops_circle'
-            type='circle'
-            paint={{
-              'circle-color': 'yellow',
-              'circle-radius': 5,
-            }} 
-          />
-        </Source>
-      )}
+              <Layer
+                id={`${layer}-layer`}
+                type={config.type}
+                paint={config.paint} 
+              />
 
-      {showRailwayStations && railwayStations && (
-        <Source id='Railway stations' type='geojson' data={railwayStations}>
-          <Layer
-            id='railway_stations_circle'
-            type='circle'
-            paint={{
-              'circle-color': 'orange',
-              'circle-radius': 5,
-            }} 
-          />
-        </Source>
-      )}
-      
-      {hoverInfo && (
-        <div className='absolute bottom-2 left-2 z-30 bg-white p-2 rounded shadow text-black'>
-          <strong>Layer name:</strong> {hoverInfo.sourceName} <br />
-          {Object.entries(hoverInfo.properties).map(([key, value]) => (
-            <div key={key}>
-              <strong>{key}:</strong> {value}
+              {layer === 'districts' && (
+
+                <Layer
+                  id={`${layer}-line`}
+                  type='line'
+                  paint={{
+                    'line-color': 'black',
+                    'line-width': 3
+                  }}
+                />
+
+              )}
+
+
+            </Source>
+          );
+        })}
+
+        <div 
+          className='absolute top-2 right-2 z-20 bg-white text-black rounded shadow p-2'
+        >
+
+          {Object.keys(LAYERS).map(layer => (
+
+            <div
+              key={layer}
+            >
+
+            <label>
+              <input
+                type='checkbox'
+                checked={visibleLayer[layer]}
+                onChange={() => {
+                  setVisibleLayer(prev => ({
+                    ...prev,
+                    [layer]: !prev[layer]
+                  }));
+                }}
+              />
+
+              {layer}
+              
+            </label>
             </div>
+
           ))}
+
         </div>
 
-      )}
+        {hoverInfo && (
 
-      <div 
-        className='absolute top-2 right-2 z-20 bg-white text-black text-[2vh] rounded shadow p-2'>
-          
-          <label>
-            <input 
-              type='checkbox'
-              checked={showDistricts}
-              onChange={() => setShowDistricts(prev => !prev)}
-            />
-            Districts
-          </label>
-          <br />
+          <div
+            className='absolute bottom-2 left-2 z-20 bg-white text-black rounded shadow p-2'
+          >
 
-          <label>
-            <input
-              type='checkbox'
-              checked={showRoads}
-              onChange={() => setShowRoads(prev => !prev)} 
-            />
-            Roads
-          </label>
-          <br />
+            <strong>Layer: </strong> {hoverInfo.source}
 
-          <label>
-            <input
-              type='checkbox'
-              checked={showRail}
-              onChange={() => setShowRail(prev => !prev)} 
-            />
-            Rail
-          </label>
-          <br />
+            {Object.entries(hoverInfo.properties).map(([key, value]) => (
 
-          <label>
-            <input
-              type='checkbox'
-              checked={showCanals}
-              onChange={() => setShowCanals(prev => !prev)} 
-            />Canals
-          </label>
-          <br />
+              <div
+                key={key}
+              >
+                <strong>{key}: </strong> {value}
+              </div>
 
-          <label>
-            <input
-              type='checkbox'
-              checked={showBusStops}
-              onChange={() => {setShowBusStops(prev => !prev)}} 
-            />Bus stops
-          </label>
-          <br />
+            ))}
 
-          <label>
-            <input
-              type='checkbox'
-              checked={showRailwayStations}
-              onChange={() => {setShowRailwayStations(prev => !prev)}} 
-            />Railway stations
-          </label>
+          </div>
+        )}
 
-
-      </div>
 
       </Map>
 
-    
     </div>
   );
-
 }
 
 export default App;
