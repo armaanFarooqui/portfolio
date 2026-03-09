@@ -127,14 +127,14 @@ def process_cbs(zip_path, engine):
             dutch_wijken['gemeentenaam'] == CITY
         ]
 
-        boundary_wijken['area_kmsq'] = (
+        boundary_wijken['area'] = (
             boundary_wijken['geometry'].area
             .div(10**6)
             .round(3)
         )
 
         boundary_wijken = (
-            boundary_wijken[['wijkcode', 'wijknaam',  'aantal_inwoners', 'area_kmsq', 'geometry']]
+            boundary_wijken[['wijkcode', 'wijknaam',  'aantal_inwoners', 'area', 'geometry']]
             .rename(columns={
                 'wijkcode': 'id',
                 'wijknaam': 'name',
