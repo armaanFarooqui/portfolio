@@ -169,144 +169,169 @@ function App() {
 
   return (
     
-    <div className='h-screen w-screen'>
+    <div className='flex flex-col h-screen w-screen'>
+
+      <div className='navbar flex justify-center items-center bg-[#343434] text-white font-bold text-2xl'>
+            Enschede Mobility WebGIS
+      </div>
+
       
-      <Map
-        className='h-full w-full'
-        ref={mapRef}
-        onLoad={loadData}
+      <div className='flex-1'>
+        <Map
+          className='h-full w-full'
+          ref={mapRef}
+          onLoad={() => {
 
-        onMouseMove={e => {
-          
-          const feature = e.features?.[0]
+            const map = mapRef.current.getMap();
+            const padding = window.innerHeight * 0.01;
 
-          if (feature) {
-            setHoverInfo({
-              source: feature.source,
-              properties: feature.properties
-            });
-          } else {
-            setHoverInfo(null);
+            map.fitBounds(
+              [
+                [6.7558927101514543,52.1612059178504879], 
+                [6.9811000525028186,52.2855057474762432]
+              ],
+              { 
+                padding: padding,
+                duration: 0
+              }
+            );
+
+            loadData();
+
+          }}
+
+          onMouseMove={e => {
+            
+            const feature = e.features?.[0]
+
+            if (feature) {
+              setHoverInfo({
+                source: feature.source,
+                properties: feature.properties
+              });
+            } else {
+              setHoverInfo(null);
+            }
+
+          }}
+
+          interactiveLayerIds={
+            Object.keys(LAYERS).map(layer => `${layer}-layer`)
           }
 
-        }}
+          onMoveEnd={() => {
 
-        interactiveLayerIds={
-          Object.keys(LAYERS).map(layer => `${layer}-layer`)
-        }
+            clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(loadData, 300);
 
-        onMoveEnd={() => {
-
-          clearTimeout(debounceRef.current);
-          debounceRef.current = setTimeout(loadData, 300);
-
-        }}
-
-        initialViewState={{
-          latitude:52.2225, 
-          longitude:6.8925,
-          zoom: 11
-        }}
-
-        mapStyle='https://tiles.openfreemap.org/styles/liberty'
-      >
-
-        {Object.keys(LAYERS).map(layer => {
-
-          const config = LAYERS[layer];
-
-          if (!layerData[layer] || !visibleLayer[layer]) return null;
-
-          return (
-
-            <Source
-              key={layer}
-              id={layer}
-              type='geojson'
-              data={layerData[layer]}
-            >
-
-              <Layer
-                id={`${layer}-layer`}
-                type={config.type}
-                paint={config.paint} 
-              />
-
-              {layer === 'districts' && (
-
-                <Layer
-                  id={`${layer}-line`}
-                  type='line'
-                  paint={{
-                    'line-color': 'black',
-                    'line-width': 3
-                  }}
-                />
-
-              )}
+          }}
 
 
-            </Source>
-          );
-        })}
-
-        <div 
-          className='absolute top-2 right-2 z-20 bg-white text-black rounded shadow p-2'
+          mapStyle='https://tiles.openfreemap.org/styles/liberty'
         >
 
-          {Object.keys(LAYERS).map(layer => (
+          {Object.keys(LAYERS).map(layer => {
 
-            <div
-              key={layer}
-            >
+            const config = LAYERS[layer];
 
-            <label>
-              <input
-                type='checkbox'
-                checked={visibleLayer[layer]}
-                onChange={() => {
-                  setVisibleLayer(prev => ({
-                    ...prev,
-                    [layer]: !prev[layer]
-                  }));
-                }}
-              />
+            if (!layerData[layer] || !visibleLayer[layer]) return null;
 
-              {'\t'}{formatKey(layer)}
-              
-            </label>
-            </div>
+            return (
 
-          ))}
+              <Source
+                key={layer}
+                id={layer}
+                type='geojson'
+                data={layerData[layer]}
+              >
 
-        </div>
+                <Layer
+                  id={`${layer}-layer`}
+                  type={config.type}
+                  paint={config.paint} 
+                />
 
-        {hoverInfo && (
+                {layer === 'districts' && (
+
+                  <Layer
+                    id={`${layer}-line`}
+                    type='line'
+                    paint={{
+                      'line-color': 'black',
+                      'line-width': 3
+                    }}
+                  />
+
+                )}
+
+
+              </Source>
+            );
+          })}
 
           <div
-            className='absolute bottom-2 left-2 z-20 bg-white text-black rounded shadow p-2'
+            className='card absolute top-2 right-2 z-20 p-4 bg-white text-black shadow-lg flex justify-center'
           >
+            <div className='card-title flex justify-center items-center'>
+              LAYERS
+            </div>
 
-            <strong>Layer: </strong> {hoverInfo.source}
+            {Object.keys(LAYERS).map(layer => (
 
-            {Object.entries(hoverInfo.properties).map(([key, value]) => (
+              <label
+                key={layer}
+                className='flex items-center space-x-2'
+                >
 
-              <div
-                key={key}
-              >
-                <strong>{formatKey(key)}</strong>: {value}
+                  <input
+                    type='checkbox'
+                    className='checkbox checkbox-sm checkbox-primary'
+                    checked={visibleLayer[layer]}
+                    onChange={() => setVisibleLayer(
+                      prev => ({
+                        ...prev,
+                        [layer]: !prev[layer]
+                      })
+                    )}
+                  />
+                    <span
+                      className='text-sm'
+                    >
+                      {formatKey(layer)}
+                    </span>
 
-                {key==='area' && <> km<sup>2</sup></>}
-
-              </div>
-
+              </label>
             ))}
 
           </div>
-        )}
+
+          {hoverInfo && (
+
+            <div
+              className='absolute bottom-2 left-2 z-20 bg-white text-black rounded shadow p-2'
+            >
+
+              <strong>Layer: </strong> {hoverInfo.source}
+
+              {Object.entries(hoverInfo.properties).map(([key, value]) => (
+
+                <div
+                  key={key}
+                >
+                  <strong>{formatKey(key)}</strong>: {value}
+
+                  {key==='area' && <> km<sup>2</sup></>}
+
+                </div>
+
+              ))}
+
+            </div>
+          )}
 
 
-      </Map>
+        </Map>
+      </div>
 
     </div>
   );
