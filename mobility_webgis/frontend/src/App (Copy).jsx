@@ -171,162 +171,175 @@ function App() {
     
     <div className='flex flex-col h-screen w-screen'>
 
-      <header
-        className='flex items-center justify-center h-[10vh] bg-[#343434] text-[4vh] font-bold text-white'
-      >
-        Enschede Mobility WebGIS
+      <div className='navbar flex justify-center items-center bg-[#343434] text-white font-bold text-2xl'>
+            Enschede Mobility WebGIS
+      </div>
 
-      </header>
       
-      <Map
-        className='top-[10vh] h-[90vh] w-full'
-        ref={mapRef}
-        onLoad={() => {
+      <div className='flex-1'>
+        <Map
+          className='h-full w-full'
+          ref={mapRef}
+          onLoad={() => {
 
-          const map = mapRef.current.getMap();
-          const padding = window.innerHeight * 0.01;
+            const map = mapRef.current.getMap();
+            const padding = window.innerHeight * 0.01;
 
-          map.fitBounds(
-            [
-              [6.7558927101514543,52.1612059178504879], 
-              [6.9811000525028186,52.2855057474762432]
-            ],
-            { 
-              padding: padding,
-              duration: 0
+            map.fitBounds(
+              [
+                [6.7558927101514543,52.1612059178504879], 
+                [6.9811000525028186,52.2855057474762432]
+              ],
+              { 
+                padding: padding,
+                duration: 0
+              }
+            );
+
+            loadData();
+
+          }}
+
+          onMouseMove={e => {
+            
+            const feature = e.features?.[0]
+
+            if (feature) {
+              setHoverInfo({
+                source: feature.source,
+                properties: feature.properties
+              });
+            } else {
+              setHoverInfo(null);
             }
-          );
 
-          loadData();
+          }}
 
-        }}
-
-        onMouseMove={e => {
-          
-          const feature = e.features?.[0]
-
-          if (feature) {
-            setHoverInfo({
-              source: feature.source,
-              properties: feature.properties
-            });
-          } else {
-            setHoverInfo(null);
+          interactiveLayerIds={
+            Object.keys(LAYERS).map(layer => `${layer}-layer`)
           }
 
-        }}
+          onMoveEnd={() => {
 
-        interactiveLayerIds={
-          Object.keys(LAYERS).map(layer => `${layer}-layer`)
-        }
+            clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(loadData, 300);
 
-        onMoveEnd={() => {
-
-          clearTimeout(debounceRef.current);
-          debounceRef.current = setTimeout(loadData, 300);
-
-        }}
+          }}
 
 
-        mapStyle='https://tiles.openfreemap.org/styles/liberty'
-      >
-
-        {Object.keys(LAYERS).map(layer => {
-
-          const config = LAYERS[layer];
-
-          if (!layerData[layer] || !visibleLayer[layer]) return null;
-
-          return (
-
-            <Source
-              key={layer}
-              id={layer}
-              type='geojson'
-              data={layerData[layer]}
-            >
-
-              <Layer
-                id={`${layer}-layer`}
-                type={config.type}
-                paint={config.paint} 
-              />
-
-              {layer === 'districts' && (
-
-                <Layer
-                  id={`${layer}-line`}
-                  type='line'
-                  paint={{
-                    'line-color': 'black',
-                    'line-width': 3
-                  }}
-                />
-
-              )}
-
-
-            </Source>
-          );
-        })}
-
-        <div 
-          className='absolute top-2 right-2 z-20 bg-white text-black rounded shadow p-2'
+          mapStyle='https://tiles.openfreemap.org/styles/liberty'
         >
 
-          {Object.keys(LAYERS).map(layer => (
+          {Object.keys(LAYERS).map(layer => {
 
-            <div
-              key={layer}
-            >
+            const config = LAYERS[layer];
 
-            <label>
-              <input
-                type='checkbox'
-                checked={visibleLayer[layer]}
-                onChange={() => {
-                  setVisibleLayer(prev => ({
-                    ...prev,
-                    [layer]: !prev[layer]
-                  }));
-                }}
-              />
+            if (!layerData[layer] || !visibleLayer[layer]) return null;
 
-              {'\t'}{formatKey(layer)}
-              
-            </label>
+            return (
+
+              <Source
+                key={layer}
+                id={layer}
+                type='geojson'
+                data={layerData[layer]}
+              >
+
+                <Layer
+                  id={`${layer}-layer`}
+                  type={config.type}
+                  paint={config.paint} 
+                />
+
+                {layer === 'districts' && (
+
+                  <Layer
+                    id={`${layer}-line`}
+                    type='line'
+                    paint={{
+                      'line-color': 'black',
+                      'line-width': 3
+                    }}
+                  />
+
+                )}
+
+
+              </Source>
+            );
+          })}
+
+
+          <div className='card absolute top-2 right-2 z-20 bg-white text-black shadow-lg'>
+            <div className='card-body'>
+
+              <div className='card-title justify-center'>
+                LAYERS
+              </div>
+
+              <label>
+
+                {Object.keys(LAYERS).map(layer => (
+
+                  <div className='flex space-x-2' key={layer}>
+
+                    <input
+                      type='checkbox'
+                      className='checkbox checkbox-sm checkbox-primary'
+                      checked={visibleLayer[layer]}
+                      onChange={() => {
+                        setVisibleLayer(prev => ({
+                          ...prev,
+                          [layer]: !prev[layer]
+                        }));
+                      }}
+                    >
+                    </input>
+
+                    <div>
+                      {formatKey(layer)}
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </label>
+
             </div>
 
-          ))}
+          </div>
 
-        </div>
+          {hoverInfo && (
 
-        {hoverInfo && (
+            <div className='card absolute bottom-2 left-2 z-20 bg-white shadow-lg text-black'>
+              <div className='card-body'>
+                
+                <div className='card-title justify-center'>
+                  INFO
+                </div>
 
-          <div
-            className='absolute bottom-2 left-2 z-20 bg-white text-black rounded shadow p-2'
-          >
+                <div>
+                  <strong>Layer: </strong> {hoverInfo.source}
+                </div>
 
-            <strong>Layer: </strong> {hoverInfo.source}
+                {Object.entries(hoverInfo.properties).map(([key, value]) => (
 
-            {Object.entries(hoverInfo.properties).map(([key, value]) => (
+                  <div key={key}>
+                    <strong>{formatKey(key)}: </strong> {value}
+                  </div>
 
-              <div
-                key={key}
-              >
-                <strong>{formatKey(key)}</strong>: {value}
+                ))}
 
-                {key==='area' && <> km<sup>2</sup></>}
+                
 
               </div>
 
-            ))}
+            </div>
+          )}
 
-          </div>
-        )}
-
-
-      </Map>
+        </Map>
+      </div>
 
     </div>
   );

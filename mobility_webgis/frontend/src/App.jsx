@@ -269,66 +269,87 @@ function App() {
             );
           })}
 
-          <div
-            className='card absolute top-2 right-2 z-20 p-4 bg-white text-black shadow-lg flex justify-center'
-          >
-            <div className='card-title flex justify-center items-center'>
-              LAYERS
-            </div>
 
-            {Object.keys(LAYERS).map(layer => (
+          <div className='card absolute top-2 right-2 z-20 bg-white text-black shadow-lg'>
+            <div className='card-body'>
 
-              <label
-                key={layer}
-                className='flex items-center space-x-2'
-                >
+              <div className='card-title justify-center'>
+                LAYERS
+              </div>
 
-                  <input
-                    type='checkbox'
-                    className='checkbox checkbox-sm checkbox-primary'
-                    checked={visibleLayer[layer]}
-                    onChange={() => setVisibleLayer(
-                      prev => ({
-                        ...prev,
-                        [layer]: !prev[layer]
-                      })
-                    )}
-                  />
-                    <span
-                      className='text-sm'
+              <label>
+
+                {Object.keys(LAYERS).map(layer => {
+
+                  const color = LAYERS[layer].paint['line-color'] || LAYERS[layer].paint['circle-color'] || 'black';
+                  
+                  return (
+
+                  <div className='flex space-x-2' key={layer}>
+
+                    <input
+                      type='checkbox'
+                      className='h-4 w-4'
+                      checked={visibleLayer[layer]}
+                      onChange={() => {
+                        setVisibleLayer(prev => ({
+                          ...prev,
+                          [layer]: !prev[layer]
+                        }));
+                      }}
+                      style={{ accentColor: color }}
                     >
+                    </input>
+
+                    <div>
                       {formatKey(layer)}
-                    </span>
+                    </div>
+
+
+                  </div>
+
+                ); }
+                
+                )}
 
               </label>
-            ))}
+
+            </div>
 
           </div>
 
           {hoverInfo && (
 
-            <div
-              className='absolute bottom-2 left-2 z-20 bg-white text-black rounded shadow p-2'
-            >
+            <div className='card absolute bottom-2 right-2 z-20 bg-white shadow-lg text-black overflow-auto max-w-[50vw]'>
+              <div className='card-body'>
+                
+                <div className='card-title justify-center'>
+                  INFO
+                </div>
 
-              <strong>Layer: </strong> {hoverInfo.source}
+                <div className='flex flex-col space-y-0.5'>
 
-              {Object.entries(hoverInfo.properties).map(([key, value]) => (
+                <div>
+                  <strong>Layer: </strong> {hoverInfo.source}
+                </div>
 
-                <div
-                  key={key}
-                >
-                  <strong>{formatKey(key)}</strong>: {value}
+                {Object.entries(hoverInfo.properties).map(([key, value]) => (
 
-                  {key==='area' && <> km<sup>2</sup></>}
+                  <div key={key}>
+                    <strong>{formatKey(key)}: </strong> {value}
+                  </div>
+                  
+
+                ))}
 
                 </div>
 
-              ))}
+                
+
+              </div>
 
             </div>
           )}
-
 
         </Map>
       </div>
