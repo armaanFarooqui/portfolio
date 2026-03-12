@@ -9,8 +9,7 @@ function App() {
 
   const [layerData, setLayerData] = React.useState({});
 
-  const LWS = 1.5;
-  const LWL = 10;
+  const LW = 1.5;
   const LN = 'line';
 
   const CR = 'circle';
@@ -25,7 +24,7 @@ function App() {
     canals: 'blue',
     bus_stops: 'cyan',
     railway_stations: 'red',
-    districts: 'transparent',
+    districts: 'black',
     default_roads: 'grey'
 };
 
@@ -34,28 +33,8 @@ function App() {
     roads: {
       type: LN,
       paint: {
-        'line-color': [
-          'match',
-          ['get', 'road_type'],
-
-          ['primary', 'primary_link'], COLOURS.roads_primary,
-          ['secondary', 'secondary_link'], COLOURS.roads_secondary,
-          ['tertiary', 'tertiary_link'], COLOURS.roads_tertiary,
-
-          'grey'
-        ],
-
-        'line-width': [
-          'match',
-          ['get', 'road_type'],
-
-          ['primary', 'primary_link',
-            'secondary', 'secondary_link',
-            'tertiary', 'tertiary_link',
-          ], LWL,
-
-          LWS
-        ],
+        'line-color': 'limegreen',
+        'line-width': LW,
       },
     },
 
@@ -63,7 +42,7 @@ function App() {
       type: LN,
       paint: {
         'line-color': COLOURS.rail,
-        'line-width': LWL
+        'line-width': LW
       }
     },
 
@@ -71,7 +50,7 @@ function App() {
       type: LN,
       paint:{
         'line-color': COLOURS.canals,
-        'line-width': LWL
+        'line-width': LW
       }
     },
 
@@ -99,7 +78,7 @@ function App() {
       type: 'fill',
       paint: {
         'fill-color': COLOURS.districts,
-        'fill-opacity': 0.1,
+        'fill-opacity': 0.05,
       }
     },
 
@@ -166,6 +145,51 @@ function App() {
 
     setLayerData(newData);
   }
+
+  function getSymbol({ config }) {
+
+    if (config.type === 'line') {
+      return (
+        <div
+          style={{
+            width: 20,
+            height: 3,
+            backgroundColor: config.paint['line-color']
+          }} 
+        />
+      );
+    }
+
+    if (config.type === 'circle') {
+      return (
+        <div
+          style={{
+            width: 12,
+            height:12,
+            backgroundColor: config.paint['circle-color'],
+            borderRadius: '50%',
+            border: '1px solid black'
+          }} 
+        />
+      );
+    }            
+
+
+    if (config.type === 'fill') {
+      return (
+        <div
+          style={{
+            width: 15,
+            height: 15,
+            backgroundColor: config.paint['fill-color'],
+            opacity: 0.5,
+          }} 
+        />
+      );
+    }
+
+  }
+
 
   return (
     
@@ -279,38 +303,40 @@ function App() {
 
               <label>
 
-                {Object.keys(LAYERS).map(layer => {
+                {Object.entries(LAYERS).map(([layer, config]) => {
 
-                  const color = LAYERS[layer].paint['line-color'] || LAYERS[layer].paint['circle-color'] || 'black';
-                  
-                  return (
+                  const symbol = getSymbol({ config });
 
-                  <div className='flex space-x-2' key={layer}>
+                  return(
 
-                    <input
-                      type='checkbox'
-                      className='h-4 w-4'
-                      checked={visibleLayer[layer]}
-                      onChange={() => {
-                        setVisibleLayer(prev => ({
+                    <div
+                      key={layer}
+                      className='flex items-center gap-2 text-sm'
+                    >
+
+                      <input
+                        type='checkbox'
+                        className='checkbox checkbox-primary checkbox-sm'
+                        checked={visibleLayer[layer]}
+                        onChange={() => setVisibleLayer(prev => ({
                           ...prev,
                           [layer]: !prev[layer]
-                        }));
-                      }}
-                      style={{ accentColor: color }}
-                    >
-                    </input>
+                        }))} 
+                      />
 
-                    <div>
-                      {formatKey(layer)}
+                        <div className='w-6 flex justify-center items-center'>
+                          {symbol}
+                        </div>
+
+                      <div> {formatKey(layer)} </div>
+
                     </div>
 
+                  );
 
-                  </div>
+                })}
 
-                ); }
-                
-                )}
+
 
               </label>
 

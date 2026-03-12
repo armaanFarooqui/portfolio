@@ -9,8 +9,7 @@ function App() {
 
   const [layerData, setLayerData] = React.useState({});
 
-  const LWS = 1.5;
-  const LWL = 10;
+  const LW = 1.5;
   const LN = 'line';
 
   const CR = 'circle';
@@ -25,7 +24,7 @@ function App() {
     canals: 'blue',
     bus_stops: 'cyan',
     railway_stations: 'red',
-    districts: 'transparent',
+    districts: 'black',
     default_roads: 'grey'
 };
 
@@ -34,28 +33,9 @@ function App() {
     roads: {
       type: LN,
       paint: {
-        'line-color': [
-          'match',
-          ['get', 'road_type'],
+        'line-color': 'limegreen',
 
-          ['primary', 'primary_link'], COLOURS.roads_primary,
-          ['secondary', 'secondary_link'], COLOURS.roads_secondary,
-          ['tertiary', 'tertiary_link'], COLOURS.roads_tertiary,
-
-          'grey'
-        ],
-
-        'line-width': [
-          'match',
-          ['get', 'road_type'],
-
-          ['primary', 'primary_link',
-            'secondary', 'secondary_link',
-            'tertiary', 'tertiary_link',
-          ], LWL,
-
-          LWS
-        ],
+        'line-width': LW,
       },
     },
 
@@ -63,7 +43,7 @@ function App() {
       type: LN,
       paint: {
         'line-color': COLOURS.rail,
-        'line-width': LWL
+        'line-width': LW
       }
     },
 
@@ -71,7 +51,7 @@ function App() {
       type: LN,
       paint:{
         'line-color': COLOURS.canals,
-        'line-width': LWL
+        'line-width': LW
       }
     },
 
@@ -99,7 +79,7 @@ function App() {
       type: 'fill',
       paint: {
         'fill-color': COLOURS.districts,
-        'fill-opacity': 0.1,
+        'fill-opacity': 0.05,
       }
     },
 
@@ -165,6 +145,79 @@ function App() {
     })
 
     setLayerData(newData);
+  }
+
+  function getLegendSymbol(config) {
+
+    if (config.type === 'line') {
+      return {
+        type: 'line',
+        color: config.paint['line-color'],
+      };
+    }
+
+    if (config.type === 'circle') {
+      return {
+        type: 'circle',
+        color: config.paint['circle-color'],
+      };
+    }
+
+    if (config.type === 'fill') {
+      return {
+        type: 'fill',
+        color: config.paint['fill-color']
+      };
+    }
+
+    return null;
+  }
+
+  function LegendSymbol({ symbol }) {
+
+    if (!symbol) return null;
+
+    if (symbol.type === 'line') {
+      return (
+        <div
+          style={{
+            width: 22,
+            height: 3,
+            backgroundColor: symbol.color
+          }} 
+          />
+
+      );
+    }
+
+    if (symbol.type === 'circle') {
+      return (
+        <div
+          style={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            backgroundColor: symbol.color,
+            border: '1px solid black'
+          }} 
+        />
+      );
+    }
+
+    if (symbol.type === 'fill') {
+      return (
+        <div 
+          style={{
+            width: 14,
+            height: 14,
+            backgroundColor: symbol.color,
+            border: '1px solid black',
+            opacity: 0.5
+          }}/>
+      );
+    }
+
+    return null;
   }
 
   return (
@@ -279,30 +332,37 @@ function App() {
 
               <label>
 
-                {Object.keys(LAYERS).map(layer => (
+                {Object.entries(LAYERS).map(([layer, config]) => {
 
-                  <div className='flex space-x-2' key={layer}>
+                  const symbol = getLegendSymbol(config);
 
-                    <input
-                      type='checkbox'
-                      className='checkbox checkbox-sm checkbox-primary'
-                      checked={visibleLayer[layer]}
-                      onChange={() => {
-                        setVisibleLayer(prev => ({
-                          ...prev,
-                          [layer]: !prev[layer]
-                        }));
-                      }}
-                    >
-                    </input>
+                  return (
 
-                    <div>
-                      {formatKey(layer)}
+                    <div className='flex items-center gap-3' key={layer}>
+
+                      <input
+                        type='checkbox'
+                        className='checkbox checkbox-primary checkbox-sm'
+                        checked={visibleLayer[layer]}
+                        onChange={() => {
+                          setVisibleLayer(prev => ({
+                            ...prev,
+                            [layer]: !prev[layer]
+                          }));
+                        }} 
+                      />
+
+                      <div className='w-6 flex justify-center items-center'>
+                        <LegendSymbol  symbol={symbol}/>
+                      </div>
+
+                      <div>
+                        {formatKey(layer)}
+                      </div>
                     </div>
+                  );
+                })}
 
-                  </div>
-
-                ))}
 
               </label>
 
@@ -312,12 +372,14 @@ function App() {
 
           {hoverInfo && (
 
-            <div className='card absolute bottom-2 left-2 z-20 bg-white shadow-lg text-black'>
+            <div className='card absolute bottom-2 right-2 z-20 bg-white shadow-lg text-black overflow-auto max-w-[50vw]'>
               <div className='card-body'>
                 
                 <div className='card-title justify-center'>
                   INFO
                 </div>
+
+                <div className='flex flex-col space-y-0.5'>
 
                 <div>
                   <strong>Layer: </strong> {hoverInfo.source}
@@ -328,8 +390,11 @@ function App() {
                   <div key={key}>
                     <strong>{formatKey(key)}: </strong> {value}
                   </div>
+                  
 
                 ))}
+
+                </div>
 
                 
 
