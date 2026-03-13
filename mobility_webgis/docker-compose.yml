@@ -16,7 +16,25 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-  
+
+  loader:
+    build: ./tools
+    container_name: mobility_loader
+    command: python load_spatial_data.py
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: mobility
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    volumes:
+      - ./data:/data
+      - ./scripts:/scripts
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   notebook:
     build: ./tools
     container_name: mobility_notebook
@@ -61,6 +79,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      loader:
+        condition: service_completed_successfully
 
   frontend:
     image: node:20-alpine
@@ -72,7 +92,8 @@ services:
       - ./frontend:/app
     command: sh -lc "npm install && npm run dev -- --host"
     depends_on:
-      - api
+      api:
+        condition: service_started
 
   tools:
     build: ./tools

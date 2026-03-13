@@ -34,7 +34,6 @@ function App() {
       type: LN,
       paint: {
         'line-color': 'limegreen',
-
         'line-width': LW,
       },
     },
@@ -147,78 +146,50 @@ function App() {
     setLayerData(newData);
   }
 
-  function getLegendSymbol(config) {
+  function getSymbol({ config }) {
 
     if (config.type === 'line') {
-      return {
-        type: 'line',
-        color: config.paint['line-color'],
-      };
-    }
-
-    if (config.type === 'circle') {
-      return {
-        type: 'circle',
-        color: config.paint['circle-color'],
-      };
-    }
-
-    if (config.type === 'fill') {
-      return {
-        type: 'fill',
-        color: config.paint['fill-color']
-      };
-    }
-
-    return null;
-  }
-
-  function LegendSymbol({ symbol }) {
-
-    if (!symbol) return null;
-
-    if (symbol.type === 'line') {
       return (
         <div
           style={{
-            width: 22,
+            width: 20,
             height: 3,
-            backgroundColor: symbol.color
-          }} 
-          />
-
-      );
-    }
-
-    if (symbol.type === 'circle') {
-      return (
-        <div
-          style={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            backgroundColor: symbol.color,
-            border: '1px solid black'
+            backgroundColor: config.paint['line-color']
           }} 
         />
       );
     }
 
-    if (symbol.type === 'fill') {
+    if (config.type === 'circle') {
       return (
-        <div 
+        <div
           style={{
-            width: 14,
-            height: 14,
-            backgroundColor: symbol.color,
-            border: '1px solid black',
-            opacity: 0.5
-          }}/>
+            width: 12,
+            height:12,
+            backgroundColor: config.paint['circle-color'],
+            borderRadius: '50%',
+            border: '1px solid black'
+          }} 
+        />
+      );
+    }            
+
+
+    if (config.type === 'fill') {
+      return (
+        <div
+          style={{
+            width: 15,
+            height: 15,
+            backgroundColor: config.paint['fill-color'],
+            opacity: 0.5,
+          }} 
+        />
       );
     }
 
-    return null;
   }
+
 
   return (
     
@@ -334,34 +305,37 @@ function App() {
 
                 {Object.entries(LAYERS).map(([layer, config]) => {
 
-                  const symbol = getLegendSymbol(config);
+                  const symbol = getSymbol({ config });
 
-                  return (
+                  return(
 
-                    <div className='flex items-center gap-3' key={layer}>
+                    <div
+                      key={layer}
+                      className='flex items-center gap-2 text-sm'
+                    >
 
                       <input
                         type='checkbox'
                         className='checkbox checkbox-primary checkbox-sm'
                         checked={visibleLayer[layer]}
-                        onChange={() => {
-                          setVisibleLayer(prev => ({
-                            ...prev,
-                            [layer]: !prev[layer]
-                          }));
-                        }} 
+                        onChange={() => setVisibleLayer(prev => ({
+                          ...prev,
+                          [layer]: !prev[layer]
+                        }))} 
                       />
 
-                      <div className='w-6 flex justify-center items-center'>
-                        <LegendSymbol  symbol={symbol}/>
-                      </div>
+                        <div className='w-6 flex justify-center items-center'>
+                          {symbol}
+                        </div>
 
-                      <div>
-                        {formatKey(layer)}
-                      </div>
+                      <div> {formatKey(layer)} </div>
+
                     </div>
+
                   );
+
                 })}
+
 
 
               </label>

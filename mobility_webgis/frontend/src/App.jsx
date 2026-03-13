@@ -8,6 +8,7 @@ function App() {
   const debounceRef = React.useRef(null);
 
   const [layerData, setLayerData] = React.useState({});
+  const [layerStatus, setLayerStatus] = React.useState({});
 
   const LW = 1.5;
   const LN = 'line';
@@ -99,7 +100,7 @@ function App() {
 
   function getBbox() {
     
-    const map = mapRef.current.getMap();
+    const map = mapRef.current?.getMap();
     if (!map) return;
 
     const bounds = map.getBounds();
@@ -114,18 +115,35 @@ function App() {
   }
 
   async function fetchLayer(layer, bbox) {
+
+    setLayerStatus(prev => ({...prev, [layer]: 'loading'}));
     
     const [minx, miny, maxx, maxy] = bbox;
 
-    const res = await fetch(
-      `/api/layers/${layer}/features?bbox=${minx},${miny},${maxx},${maxy}`
-    );
+    try {
 
-    if (!res.ok) {
-      throw new Error(`Failed to load ${layer} roads`);
+      const res = await fetch(
+        `/api/layers/${layer}/features?bbox=${minx},${miny},${maxx},${maxy}`
+      );
+
+      if (!res.ok) {
+        throw new Error();
+      }
+
+      const data = await res.json();
+
+      setLayerStatus(prev => ({...prev, [layer]: 'loaded'}));
+
+      return data;
+
+    } catch {
+
+      setLayerStatus(prev => ({...prev, [layer]: 'error'}));
+
+      return null;
+
     }
 
-    return res.json();
   }
 
   async function loadData() {
@@ -301,7 +319,7 @@ function App() {
                 LAYERS
               </div>
 
-              <label>
+              <div>
 
                 {Object.entries(LAYERS).map(([layer, config]) => {
 
@@ -330,6 +348,21 @@ function App() {
 
                       <div> {formatKey(layer)} </div>
 
+                      {layerStatus[layer] === 'loading' && (
+
+                        <div
+                          className='loading loading-spinner loading-xs'
+                        />
+                      )}
+
+                      {layerStatus[layer] === 'error' && (
+
+                        <div
+                          className='text-error font-bold'
+                        > !
+                        </div>
+                      )}
+
                     </div>
 
                   );
@@ -338,7 +371,7 @@ function App() {
 
 
 
-              </label>
+              </div>
 
             </div>
 
